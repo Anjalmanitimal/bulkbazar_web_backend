@@ -9,6 +9,7 @@ const app = express();
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+console.log("MONGO URI =>", process.env.MONGODB_URI);
 
 mongoose
   .connect(process.env.MONGODB_URI!)
