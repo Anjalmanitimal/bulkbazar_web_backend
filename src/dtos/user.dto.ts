@@ -1,26 +1,20 @@
 import { z } from "zod";
+console.log("✅ CORRECT user.dto.ts LOADED");
 
-/* REGISTER DTO */
-export const registerDto = z
-  .object({
-    email: z.string().email(),
-    username: z.string().min(3),
-    password: z.string().min(6),
-    confirmPassword: z.string().min(6),
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+/* ================= REGISTER DTO ================= */
+export const registerDto = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  name: z.string().min(2, "Full name is required"),
+  role: z.enum(["seller", "customer"]),
+});
 
 export type RegisterDto = z.infer<typeof registerDto>;
 
-/* LOGIN DTO */
+/* ================= LOGIN DTO ================= */
 export const loginDto = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export type LoginDto = z.infer<typeof loginDto>;
