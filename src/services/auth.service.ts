@@ -11,7 +11,7 @@ export const registerUserService = async (data: any) => {
   const user = await createUser({
     email: data.email,
     password: hashedPassword,
-    fullName: data.fullname,
+    fullName: data.fullName,
     role: data.role,
   });
 

@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use("/api", profileRoutes);
 
 console.log("MONGO URI =>", process.env.MONGODB_URI);
