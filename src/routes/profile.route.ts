@@ -1,17 +1,18 @@
 import { Router } from "express";
-import { register, login } from "../controllers/auth.controller";
 import { uploads } from "../middlewares/upload.middleware";
+import {
+  getProfile,
+  uploadProfileImage,
+} from "../controllers/profile.controller";
 import { authorizedMiddleware } from "../middlewares/auth.middleware";
-import { uploadProfileImage } from "../controllers/auth.controller";
 
 const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
+router.get("/profile", authorizedMiddleware, getProfile);
 router.post(
   "/profile/upload",
   authorizedMiddleware,
-  uploads.single("profileImage"),
+  uploads.single("image"),
   uploadProfileImage,
 );
 

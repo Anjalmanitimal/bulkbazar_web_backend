@@ -5,6 +5,9 @@ import {
   registerUserService,
   loginUserService,
 } from "../services/auth.service";
+import { HttpError } from "../errors/http.error";
+import { UserModel } from "../models/user.model";
+
 console.log("🔥 ACTIVE DTO: NO username, NO confirmPassword");
 
 /* ================= REGISTER ================= */
@@ -57,6 +60,70 @@ export const login = async (req: Request, res: Response) => {
     res.status(400).json({
       success: false,
       message: error.message || "Invalid credentials",
+    });
+  }
+};
+
+export const uploadProfileImage = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      throw new HttpError(401, "Unauthorized");
+    }
+
+    if (!req.file) {
+      throw new HttpError(400, "No file uploaded");
+    }
+
+    const imagePath = `/uploads/profile/${req.file.filename}`;
+
+    // ✅ FETCH FULL USER FROM DB
+    const user = await UserModel.findById(req.user.userId);
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    user.profileImage = imagePath;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Profile image uploaded successfully",
+      data: {
+        profileImage: imagePath,
+      },
+    });
+  } catch (err: any) {
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
+  }
+};
+
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      throw new HttpError(401, "Unauthorized");
+    }
+
+    const user = await UserModel.findById(req.user.userId);
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        fullName: user.fullName, // ✅ CORRECT
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage,
+      },
+    });
+  } catch (err: any) {
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
     });
   }
 };
