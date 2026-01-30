@@ -1,7 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../configs";
 import { HttpError } from "../errors/http.error";
+
+const JWT_SECRET = process.env.JWT_SECRET as string;
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined in environment variables");
+}
+
+console.log("JWT_SECRET (MIDDLEWARE) =>", JWT_SECRET);
 
 declare global {
   namespace Express {
@@ -22,33 +29,35 @@ export const authorizedMiddleware = (
   try {
     const authHeader = req.headers.authorization;
 
+    console.log("AUTH HEADER =>", authHeader);
+    console.log("JWT_SECRET (MIDDLEWARE) =>", JWT_SECRET);
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       throw new HttpError(401, "Unauthorized: Invalid token format");
     }
 
     const token = authHeader.split(" ")[1];
-    if (!token) {
-      throw new HttpError(401, "Unauthorized: Token missing");
-    }
+    console.log("TOKEN (MIDDLEWARE) =>", token);
 
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      userId: string;
-      role?: string;
-    };
+    const decoded = jwt.verify(token, JWT_SECRET);
+    console.log("DECODED (MIDDLEWARE) =>", decoded);
 
-    if (!decoded?.userId) {
+    const payload = decoded as any;
+
+    if (!payload?.id) {
       throw new HttpError(401, "Unauthorized: Token verification failed");
     }
 
-    // Attach decoded info (NO DB CALL)
     req.user = {
-      userId: decoded.userId,
-      role: decoded.role,
+      userId: payload.id,
+      role: payload.role,
     };
 
     return next();
   } catch (err: any) {
-    return res.status(err.statusCode || 401).json({
+    console.error("JWT VERIFY ERROR =>", err);
+
+    return res.status(401).json({
       success: false,
       message: err.message || "Unauthorized",
     });

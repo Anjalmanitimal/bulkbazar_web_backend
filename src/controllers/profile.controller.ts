@@ -4,7 +4,7 @@ import { HttpError } from "../errors/http.error";
 
 /* ================= GET PROFILE ================= */
 export const getProfile = async (req: any, res: Response) => {
-  const user = await UserModel.findById(req.user.id).select(
+  const user = await UserModel.findById(req.user.userId).select(
     "name email role profileImage",
   );
 
@@ -29,7 +29,7 @@ export const uploadProfileImage = async (
     const imagePath = `/uploads/profile/${req.file.filename}`;
 
     const user = await UserModel.findByIdAndUpdate(
-      req.user.id,
+      req.user.userId, // ✅ FIX HERE
       { profileImage: imagePath },
       { new: true },
     );
