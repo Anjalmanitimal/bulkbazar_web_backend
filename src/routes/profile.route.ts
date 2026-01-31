@@ -8,6 +8,7 @@ import { authorizedMiddleware } from "../middlewares/auth.middleware";
 
 const router = Router();
 
+
 router.get("/profile", authorizedMiddleware, getProfile);
 router.post(
   "/profile/upload",
