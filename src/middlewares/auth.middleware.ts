@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { HttpError } from "../errors/http.error";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -7,8 +7,6 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined in environment variables");
 }
-
-console.log("JWT_SECRET (MIDDLEWARE) =>", JWT_SECRET);
 
 declare global {
   namespace Express {
@@ -21,6 +19,11 @@ declare global {
   }
 }
 
+/**
+ * ============================
+ * AUTHORIZATION MIDDLEWARE
+ * ============================
+ */
 export const authorizedMiddleware = (
   req: Request,
   res: Response,
@@ -29,34 +32,25 @@ export const authorizedMiddleware = (
   try {
     const authHeader = req.headers.authorization;
 
-    console.log("AUTH HEADER =>", authHeader);
-    console.log("JWT_SECRET (MIDDLEWARE) =>", JWT_SECRET);
-
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new HttpError(401, "Unauthorized: Invalid token format");
+      throw new HttpError(401, "Unauthorized: Token missing or invalid");
     }
 
     const token = authHeader.split(" ")[1];
-    console.log("TOKEN (MIDDLEWARE) =>", token);
 
-    const decoded = jwt.verify(token, JWT_SECRET);
-    console.log("DECODED (MIDDLEWARE) =>", decoded);
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
-    const payload = decoded as any;
-
-    if (!payload?.id) {
-      throw new HttpError(401, "Unauthorized: Token verification failed");
+    if (!decoded || !decoded.id) {
+      throw new HttpError(401, "Unauthorized: Invalid token");
     }
 
     req.user = {
-      userId: payload.id,
-      role: payload.role,
+      userId: decoded.id as string,
+      role: decoded.role as string | undefined,
     };
 
     return next();
   } catch (err: any) {
-    console.error("JWT VERIFY ERROR =>", err);
-
     return res.status(401).json({
       success: false,
       message: err.message || "Unauthorized",
@@ -64,7 +58,13 @@ export const authorizedMiddleware = (
   }
 };
 
-
+/**
+ * ============================
+ * ADMIN-ONLY MIDDLEWARE
+ * ============================
+ * ⚠️ Does NOT affect seller/customer routes
+ * ⚠️ Only used in /api/admin/**
+ */
 export const adminMiddleware = (
   req: Request,
   res: Response,
@@ -75,8 +75,12 @@ export const adminMiddleware = (
       throw new HttpError(401, "Unauthorized");
     }
 
+    /**
+     * STRICT ADMIN CHECK
+     * seller / customer will FAIL here (as expected)
+     */
     if (req.user.role !== "ADMIN") {
-      throw new HttpError(403, "Forbidden: Admin only");
+      throw new HttpError(403, "Forbidden: Admin access only");
     }
 
     return next();
