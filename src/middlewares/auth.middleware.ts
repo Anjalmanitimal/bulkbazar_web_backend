@@ -70,24 +70,19 @@ export const adminMiddleware = (
   res: Response,
   next: NextFunction,
 ) => {
-  try {
-    if (!req.user) {
-      throw new HttpError(401, "Unauthorized");
-    }
-
-    /**
-     * STRICT ADMIN CHECK
-     * seller / customer will FAIL here (as expected)
-     */
-    if (req.user.role !== "ADMIN") {
-      throw new HttpError(403, "Forbidden: Admin access only");
-    }
-
-    return next();
-  } catch (err: any) {
-    return res.status(err.statusCode || 403).json({
+  if (!req.user) {
+    return res.status(401).json({
       success: false,
-      message: err.message || "Forbidden",
+      message: "Unauthorized",
     });
   }
+
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Admin access only",
+    });
+  }
+
+  next();
 };

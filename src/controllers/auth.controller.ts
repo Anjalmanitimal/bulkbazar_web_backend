@@ -7,6 +7,7 @@ import {
 } from "../services/auth.service";
 import { HttpError } from "../errors/http.error";
 import { UserModel } from "../models/user.model";
+import { updateProfileService } from "../services/auth.service";
 
 console.log("🔥 ACTIVE DTO: NO username, NO confirmPassword");
 
@@ -124,6 +125,41 @@ export const getProfile = async (req: Request, res: Response) => {
     return res.status(err.statusCode || 500).json({
       success: false,
       message: err.message || "Internal Server Error",
+    });
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id;
+
+    // 🔐 user can update ONLY their own profile
+    if (req.user?.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You can update only your own profile",
+      });
+    }
+
+    const updateData: any = {
+      fullName: req.body.fullName,
+    };
+
+    if (req.file) {
+      updateData.profileImage = `/uploads/profile/${req.file.filename}`;
+    }
+
+    const updatedUser = await updateProfileService(userId, updateData);
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updatedUser,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Profile update failed",
     });
   }
 };

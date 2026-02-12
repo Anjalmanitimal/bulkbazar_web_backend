@@ -6,14 +6,14 @@ import { UserRole } from "../../types/user.types";
 interface CreateUserData {
   email: string;
   password: string;
-  fullName: string;
+  fullname: string;
   role: UserRole; // ✅ FIXED
   profileImage?: string;
 }
 
 interface UpdateUserData {
   email?: string;
-  fullName?: string;
+  fullname?: string;
   role?: UserRole; // ✅ FIXED
   profileImage?: string;
 }
@@ -30,7 +30,7 @@ export class AdminUserService {
     const user = await UserModel.create({
       email: data.email,
       password: hashedPassword,
-      fullName: data.fullName,
+      fullName: data.fullname,
       role: data.role, // ✅ now matches model
       profileImage: data.profileImage || null,
     });
@@ -53,7 +53,7 @@ export class AdminUserService {
     if (!user) throw new HttpError(404, "User not found");
 
     if (data.email) user.email = data.email;
-    if (data.fullName) user.fullName = data.fullName;
+    if (data.fullname) user.fullName = data.fullname;
     if (data.role) user.role = data.role; // ✅ no TS error
     if (data.profileImage) user.profileImage = data.profileImage;
 

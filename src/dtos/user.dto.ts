@@ -7,7 +7,7 @@ console.log("✅ CORRECT user.dto.ts LOADED");
 export const registerDto = z.object({
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  fullName: z.string().min(2, "Full name is required"),
+  fullname: z.string().min(2, "Full name is required"),
   role: z.enum(["seller", "customer"]), // public users only
 });
 
@@ -25,7 +25,7 @@ export type LoginDto = z.infer<typeof loginDto>;
 export const CreateUserDTO = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  fullName: z.string().min(2),
+  fullname: z.string().min(2),
   role: z.enum(["seller", "customer", "admin"]),
   imageUrl: z.string().optional(),
 });
