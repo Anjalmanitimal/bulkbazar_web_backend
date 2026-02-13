@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import z from "zod";
 import { AdminUserService } from "../../services/admin/user.service";
 import { CreateUserDTO, UpdateUserDTO } from "../../dtos/user.dto";
+import { UserRole } from "../../types/user.types";
 
 const adminUserService = new AdminUserService();
 
@@ -17,11 +18,18 @@ export class AdminUserController {
         });
       }
 
+      const createData: any = {
+        ...parsed.data,
+      };
+
+      // ✅ MAP STRING → ENUM
+      createData.role = parsed.data.role as UserRole;
+
       if (req.file) {
-        parsed.data.imageUrl = `/uploads/profile/${req.file.filename}`;
+        createData.imageUrl = `/uploads/profile/${req.file.filename}`;
       }
 
-      const user = await adminUserService.createUser(parsed.data);
+      const user = await adminUserService.createUser(createData);
 
       return res.status(201).json({
         success: true,
@@ -56,11 +64,20 @@ export class AdminUserController {
       });
     }
 
-    if (req.file) {
-      parsed.data.imageUrl = `/uploads/profile/${req.file.filename}`;
+    const updateData: any = {
+      ...parsed.data,
+    };
+
+    // ✅ MAP STRING → ENUM
+    if (parsed.data.role) {
+      updateData.role = parsed.data.role as UserRole;
     }
 
-    const user = await adminUserService.updateUser(req.params.id, parsed.data);
+    if (req.file) {
+      updateData.imageUrl = `/uploads/profile/${req.file.filename}`;
+    }
+
+    const user = await adminUserService.updateUser(req.params.id, updateData);
 
     return res.status(200).json({
       success: true,
