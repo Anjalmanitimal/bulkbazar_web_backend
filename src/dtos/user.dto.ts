@@ -35,7 +35,7 @@ export type CreateUserDTO = z.infer<typeof CreateUserDTO>;
 /* ================= ADMIN UPDATE USER DTO ================= */
 export const UpdateUserDTO = z.object({
   email: z.string().email().optional(),
-  fullName: z.string().min(2).optional(),
+  fullname: z.string().min(2).optional(),
   role: z.enum(["seller", "customer", "admin"]).optional(),
   imageUrl: z.string().optional(),
 });
