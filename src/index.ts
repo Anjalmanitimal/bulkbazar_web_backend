@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import app from "./app";
 
+
 console.log("MONGO URI =>", process.env.MONGODB_URI);
 
 mongoose

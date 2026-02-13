@@ -32,7 +32,20 @@ export const updateUserById = async (id: string, data: UpdateUserInput) => {
   }).select("-password");
 };
 
-/* ================= DELETE ================= */
 export const deleteUserById = async (id: string) => {
   return await UserModel.findByIdAndDelete(id);
+};
+
+export const findUsersWithPagination = async (page: number, limit: number) => {
+  const skip = (page - 1) * limit;
+
+  const [users, total] = await Promise.all([
+    UserModel.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
+    UserModel.countDocuments(),
+  ]);
+
+  return {
+    users,
+    total,
+  };
 };

@@ -4,19 +4,35 @@ import { registerDto, loginDto } from "../dtos/user.dto";
 import {
   registerUserService,
   loginUserService,
+  updateProfileService,
 } from "../services/auth.service";
 import { HttpError } from "../errors/http.error";
 import { UserModel } from "../models/user.model";
-import { updateProfileService } from "../services/auth.service";
+import { UserRole } from "../types/user.types";
 
 console.log("🔥 ACTIVE DTO: NO username, NO confirmPassword");
 
 /* ================= REGISTER ================= */
 export const register = async (req: Request, res: Response) => {
   console.log("RAW REQ BODY =>", req.body);
+
   try {
     const data = registerDto.parse(req.body);
-    const user = await registerUserService(data);
+
+    /**
+     * 🔐 ADMIN BOOTSTRAP (SPRINT PURPOSE)
+     * Only the email defined in .env becomes ADMIN
+     * Everyone else is CUSTOMER
+     */
+    const role =
+      data.email === process.env.ADMIN_EMAIL
+        ? UserRole.ADMIN
+        : UserRole.CUSTOMER;
+
+    const user = await registerUserService({
+      ...data,
+      role,
+    });
 
     res.status(201).json({
       success: true,
@@ -31,7 +47,7 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error.message || "Registration failed",
     });
@@ -58,49 +74,14 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error.message || "Invalid credentials",
     });
   }
 };
 
-export const uploadProfileImage = async (req: Request, res: Response) => {
-  try {
-    if (!req.user) {
-      throw new HttpError(401, "Unauthorized");
-    }
-
-    if (!req.file) {
-      throw new HttpError(400, "No file uploaded");
-    }
-
-    const imagePath = `/uploads/profile/${req.file.filename}`;
-
-    // ✅ FETCH FULL USER FROM DB
-    const user = await UserModel.findById(req.user.userId);
-    if (!user) {
-      throw new HttpError(404, "User not found");
-    }
-
-    user.profileImage = imagePath;
-    await user.save();
-
-    return res.json({
-      success: true,
-      message: "Profile image uploaded successfully",
-      data: {
-        profileImage: imagePath,
-      },
-    });
-  } catch (err: any) {
-    return res.status(err.statusCode || 500).json({
-      success: false,
-      message: err.message || "Internal Server Error",
-    });
-  }
-};
-
+/* ================= GET PROFILE ================= */
 export const getProfile = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -115,7 +96,7 @@ export const getProfile = async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: {
-        fullName: user.fullName, // ✅ CORRECT
+        fullName: user.fullName,
         email: user.email,
         role: user.role,
         profileImage: user.profileImage,
@@ -129,11 +110,12 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
+/* ================= UPDATE PROFILE ================= */
 export const updateProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
 
-    // 🔐 user can update ONLY their own profile
+    // 🔐 User can update ONLY their own profile
     if (req.user?.userId !== userId) {
       return res.status(403).json({
         success: false,
@@ -160,6 +142,42 @@ export const updateProfile = async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Profile update failed",
+    });
+  }
+};
+
+/* ================= UPLOAD PROFILE IMAGE ================= */
+export const uploadProfileImage = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      throw new HttpError(401, "Unauthorized");
+    }
+
+    if (!req.file) {
+      throw new HttpError(400, "No file uploaded");
+    }
+
+    const imagePath = `/uploads/profile/${req.file.filename}`;
+
+    const user = await UserModel.findById(req.user.userId);
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    user.profileImage = imagePath;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Profile image uploaded successfully",
+      data: {
+        profileImage: imagePath,
+      },
+    });
+  } catch (err: any) {
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
     });
   }
 };
