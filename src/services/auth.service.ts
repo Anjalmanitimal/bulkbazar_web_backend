@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { findUserByEmail, createUser } from "../repositories/user.repository";
-import { RegisterDto } from "../dtos/user.dto";
 import { HttpError } from "../errors/http.error";
 import { UserModel } from "../models/user.model";
+import { CreateUserInput } from "../types/user.types";
 
 /* ================= REGISTER ================= */
-export const registerUserService = async (data: RegisterDto) => {
+export const registerUserService = async (data: CreateUserInput) => {
   const existingUser = await findUserByEmail(data.email);
 
   if (existingUser) {
@@ -18,8 +18,8 @@ export const registerUserService = async (data: RegisterDto) => {
   const user = await createUser({
     email: data.email,
     password: hashedPassword,
-    fullname: data.fullname,
-    role: data.role, // seller | customer
+    fullName: data.fullName,
+    role: data.role, // ✅ now always defined
   });
 
   return user;

@@ -24,13 +24,23 @@ export const register = async (req: Request, res: Response) => {
      * Only the email defined in .env becomes ADMIN
      * Everyone else is CUSTOMER
      */
-    const role =
-      data.email === process.env.ADMIN_EMAIL
-        ? UserRole.ADMIN
-        : UserRole.CUSTOMER;
+    let role: UserRole;
+
+    // Admin bootstrap
+    if (data.email === process.env.ADMIN_EMAIL) {
+      role = UserRole.ADMIN;
+    }
+    // use role from frontend
+    else if (data.role === UserRole.SELLER) {
+      role = UserRole.SELLER;
+    } else {
+      role = UserRole.CUSTOMER;
+    }
 
     const user = await registerUserService({
-      ...data,
+      email: data.email,
+      password: data.password,
+      fullName: data.fullName,
       role,
     });
 

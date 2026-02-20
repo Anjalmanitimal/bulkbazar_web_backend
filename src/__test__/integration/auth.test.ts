@@ -5,7 +5,7 @@ describe("AUTH INTEGRATION TESTS", () => {
   const user = {
     email: "test@gmail.com",
     password: "password123",
-    fullname: "Test User",
+    fullName: "Test User",
   };
 
   it("REGISTER → success", async () => {

@@ -6,7 +6,7 @@ export const createUser = async (data: CreateUserInput) => {
   return await UserModel.create({
     email: data.email,
     password: data.password,
-    fullName: data.fullname,
+    fullName: data.fullName,
     role: data.role,
     profileImage: data.profileImage ?? null,
   });

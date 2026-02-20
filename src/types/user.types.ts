@@ -7,14 +7,14 @@ export enum UserRole {
 export interface CreateUserInput {
   email: string;
   password: string;
-  fullname: string;
+  fullName: string;
   role: UserRole;
   profileImage?: string | null;
 }
 
 export interface UpdateUserInput {
   email?: string;
-  fullname?: string;
+  fullName?: string;
   role?: UserRole;
   profileImage?: string | null;
 }
