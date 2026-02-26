@@ -32,15 +32,23 @@ export const authorizedMiddleware = (
   try {
     const authHeader = req.headers.authorization;
 
+    console.log("AUTH HEADER:", authHeader);
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("NO TOKEN FOUND");
       throw new HttpError(401, "Unauthorized: Token missing or invalid");
     }
 
     const token = authHeader.split(" ")[1];
 
+    console.log("TOKEN:", token);
+
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
+    console.log("DECODED:", decoded);
+
     if (!decoded || !decoded.id) {
+      console.log("INVALID TOKEN PAYLOAD");
       throw new HttpError(401, "Unauthorized: Invalid token");
     }
 
@@ -49,8 +57,10 @@ export const authorizedMiddleware = (
       role: decoded.role as string | undefined,
     };
 
-    return next();
+    next();
   } catch (err: any) {
+    console.log("AUTH ERROR:", err.message);
+
     return res.status(401).json({
       success: false,
       message: err.message || "Unauthorized",
