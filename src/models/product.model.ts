@@ -12,6 +12,7 @@ export interface ProductDocument extends Document {
   image: string;
   pricing: PricingTier[];
   sellerId: mongoose.Types.ObjectId;
+  category: string;
 }
 
 const PricingSchema = new Schema({
@@ -40,6 +41,11 @@ const ProductSchema = new Schema<ProductDocument>(
     image: {
       type: String,
       required: true,
+    },
+    category: {
+      type: String,
+      required: true, // ✅ ADD THIS
+      trim: true,
     },
 
     pricing: {
