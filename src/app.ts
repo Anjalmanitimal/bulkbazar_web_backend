@@ -8,6 +8,7 @@ import path from "path";
 import profileRoutes from "./routes/profile.route";
 import adminUserRoutes from "./routes/admin/admin.user.route";
 import productRoutes from "./routes/product.route";
+import orderRoutes from "./routes/order.route";
 
 dotenv.config();
 
@@ -29,5 +30,6 @@ app.use("/api/admin/users", adminUserRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use("/api", profileRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
 
 export default app;

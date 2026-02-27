@@ -4,6 +4,7 @@ import { uploads } from "../middlewares/upload.middleware";
 import { authorizedMiddleware } from "../middlewares/auth.middleware";
 import { uploadProfileImage } from "../controllers/auth.controller";
 import { updateProfile } from "../controllers/auth.controller";
+import { getProfile } from "../controllers/auth.controller";
 
 const router = Router();
 
@@ -21,5 +22,5 @@ router.put(
   uploads.single("image"),
   updateProfile,
 );
-
+router.get("/profile", authorizedMiddleware, getProfile);
 export default router;
