@@ -107,3 +107,47 @@ export const getProductById = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) throw new HttpError(401, "Unauthorized");
+
+    const productId = req.params.id;
+
+    const existingProduct = await ProductModel.findOne({
+      _id: productId,
+      sellerId: req.user.userId,
+    });
+
+    if (!existingProduct) throw new HttpError(404, "Product not found");
+
+    // build update object
+    const updateData: any = {
+      name: req.body.name,
+      description: req.body.description,
+      category: req.body.category,
+      pricing: JSON.parse(req.body.pricing),
+    };
+
+    // if new image uploaded
+    if (req.file) {
+      updateData.image = `/uploads/products/${req.file.filename}`;
+    }
+
+    const updatedProduct = await ProductModel.findByIdAndUpdate(
+      productId,
+      updateData,
+      { new: true },
+    );
+
+    res.json({
+      success: true,
+      data: updatedProduct,
+    });
+  } catch (e: any) {
+    res.status(400).json({
+      success: false,
+      message: e.message,
+    });
+  }
+};
