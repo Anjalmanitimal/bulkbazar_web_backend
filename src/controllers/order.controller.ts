@@ -47,3 +47,40 @@ export const getMyOrders = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const deleteOrder = async (req: Request, res: Response) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await OrderModel.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Ensure user deletes only their own order
+    if (order.userId.toString() !== req.user?.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    await OrderModel.findByIdAndDelete(orderId);
+
+    res.json({
+      success: true,
+      message: "Order deleted successfully",
+    });
+  } catch (error) {
+    console.error("DELETE ORDER ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete order",
+    });
+  }
+};
