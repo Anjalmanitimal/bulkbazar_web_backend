@@ -106,6 +106,7 @@ export const getProfile = async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: {
+        _id: user._id,
         fullName: user.fullName,
         email: user.email,
         role: user.role,
