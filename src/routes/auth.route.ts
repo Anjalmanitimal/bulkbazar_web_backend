@@ -4,7 +4,9 @@ import {
   login,
   uploadProfileImage,
   updateProfile,
-  getProfile, // ✅ ADD THIS
+  getProfile,
+  requestPasswordReset,
+  resetPassword, // ✅ ADD THIS
 } from "../controllers/auth.controller";
 
 import { uploads } from "../middlewares/upload.middleware";
@@ -31,5 +33,8 @@ router.put(
   uploads.single("image"),
   updateProfile,
 );
+
+router.post("/request-password-reset", requestPasswordReset);
+router.post("/reset-password/:token", resetPassword);
 
 export default router;

@@ -5,6 +5,8 @@ import {
   registerUserService,
   loginUserService,
   updateProfileService,
+  requestPasswordResetService,
+  resetPasswordService,
 } from "../services/auth.service";
 import { HttpError } from "../errors/http.error";
 import { UserModel } from "../models/user.model";
@@ -87,6 +89,39 @@ export const login = async (req: Request, res: Response) => {
     return res.status(400).json({
       success: false,
       message: error.message || "Invalid credentials",
+    });
+  }
+};
+/* ================= REQUEST PASSWORD RESET ================= */
+export const requestPasswordReset = async (req: Request, res: Response) => {
+  try {
+    await requestPasswordResetService(req.body.email);
+
+    return res.status(200).json({
+      success: true,
+      message: "If the email exists, reset link has been sent.",
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* ================= RESET PASSWORD ================= */
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    await resetPasswordService(req.params.token, req.body.password);
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
     });
   }
 };

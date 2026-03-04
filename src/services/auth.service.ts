@@ -1,9 +1,14 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { findUserByEmail, createUser } from "../repositories/user.repository";
+import {
+  findUserByEmail,
+  createUser,
+  updateUserById,
+} from "../repositories/user.repository";
 import { HttpError } from "../errors/http.error";
 import { UserModel } from "../models/user.model";
 import { CreateUserInput } from "../types/user.types";
+import { sendEmail } from "../configs/email";
 
 /* ================= REGISTER ================= */
 export const registerUserService = async (data: CreateUserInput) => {
@@ -72,4 +77,59 @@ export const updateProfileService = async (
   await user.save();
 
   return user;
+};
+/* ================= REQUEST PASSWORD RESET ================= */
+export const requestPasswordResetService = async (email: string) => {
+  const user = await findUserByEmail(email);
+
+  // Don't reveal if email exists
+  if (!user) return;
+
+  const token = jwt.sign({ id: user._id.toString() }, process.env.JWT_SECRET!, {
+    expiresIn: "1h",
+  });
+
+  const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
+
+  await sendEmail(
+    user.email,
+    "Reset Your Password",
+    `
+      <h3>Reset Password</h3>
+      <p>Click the link below to reset your password:</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>This link expires in 1 hour.</p>
+    `,
+  );
+};
+
+/* ================= RESET PASSWORD ================= */
+export const resetPasswordService = async (
+  token: string,
+  newPassword: string,
+) => {
+  try {
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+
+    // 🔐 Strong password validation
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+    if (!passwordRegex.test(newPassword)) {
+      throw new HttpError(
+        400,
+        "Password must contain uppercase, lowercase, number and special character",
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await updateUserById(decoded.id, {
+      password: hashedPassword,
+    });
+
+    return true;
+  } catch (error) {
+    throw new HttpError(400, "Invalid or expired token");
+  }
 };
