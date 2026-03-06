@@ -10,6 +10,9 @@
 // afterAll(async () => {
 //   await mongoose.connection.close();
 // });
+
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.test" });
 import { connectDatabaseTest } from "../database/mongodb";
 import mongoose from "mongoose";
 

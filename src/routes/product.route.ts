@@ -17,10 +17,18 @@ const router = Router();
 router.post(
   "/",
   authorizedMiddleware,
+  (req, res, next) => {
+    if (req.user?.role !== "seller") {
+      return res.status(403).json({
+        success: false,
+        message: "Only sellers can create products",
+      });
+    }
+    next();
+  },
   uploadProductImage.single("image"),
   createProduct,
 );
-
 // Get all products (public)
 router.get("/", getProducts);
 
